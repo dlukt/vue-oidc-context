@@ -67,11 +67,11 @@ pnpm add @dlukt/vue-oidc-context oidc-client-ts
 
 > The unscoped npm name `vue-oidc-context` is owned by an unrelated package; this project publishes under the `@dlukt` scope. The GitHub repository remains `dlukt/vue-oidc-context`.
 
-| Peer dependency  | Range    | Notes                                                 |
-| ---------------- | -------- | ----------------------------------------------------- |
-| `vue`            | `^3.5.0` | Uses `app.onUnmount`, `onScopeDispose`                |
-| `oidc-client-ts` | `^3.3.0` | Required at runtime                                   |
-| `vue-router`     | `^4.2.0` | **Optional** — only needed for the `./router` subpath |
+| Peer dependency  | Range                | Notes                                                                                                       |
+| ---------------- | -------------------- | ----------------------------------------------------------------------------------------------------------- |
+| `vue`            | `^3.5.0`             | Uses `app.onUnmount`, `onScopeDispose`                                                                      |
+| `oidc-client-ts` | `^3.3.0`             | Required at runtime                                                                                         |
+| `vue-router`     | `^4.2.0 \|\| ^5.0.0` | **Optional** — only needed for the `./router` subpath; the guard uses only API identical across both majors |
 
 Entry points (`sideEffects: false`, ESM + CJS + type declarations):
 

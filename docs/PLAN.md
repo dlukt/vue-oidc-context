@@ -91,7 +91,7 @@ Exact dependency versions are resolved at scaffold time (latest stable); the ran
   "peerDependencies": {
     "vue": "^3.5.0",
     "oidc-client-ts": "^3.3.0",
-    "vue-router": "^4.2.0",
+    "vue-router": "^4.2.0 || ^5.0.0",
   },
   "peerDependenciesMeta": {
     "vue-router": { "optional": true },
@@ -132,7 +132,7 @@ Each milestone ends green: `pnpm lint && pnpm typecheck && pnpm test && pnpm bui
 
 - `router.ts`: `createAuthGuard` (SPEC §4.5) as second build entry.
 - `AuthenticationRequired.ts` (SPEC §4.6).
-- **Done when:** guard tests cover unprotected pass-through, waiting on `initialized`, authenticated pass, unauthenticated redirect + cancelled navigation, custom `shouldProtect`/`signinArgs`.
+- **Done when:** guard tests cover unprotected pass-through, waiting on `initialized`, authenticated pass, unauthenticated redirect + cancelled navigation, custom `shouldProtect`/`signinArgs` — executed against vue-router 5 (dev dep) and vue-router 4 (swap-install step in CI).
 
 ### M4 — Test completion and hardening
 
@@ -188,11 +188,11 @@ Manual E2E checklist (run before each release, documented in `playground/README.
 
 ## 10. Risks
 
-| Risk                                                             | Mitigation                                                                                            |
-| ---------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
-| oidc-client-ts v4 lands with breaking changes                    | Thin-wrapper design keeps the blast radius in `context.ts`; peer range pins to `^3.3` until evaluated |
-| `vue-router` types leaking into core `.d.ts`                     | Guard lives in a separate entry; M4 includes a compile fixture _without_ vue-router installed         |
-| vue-router 5 is out (dev deps resolve 4.x per our `^4.2` peer)   | Evaluate the v5 guard/`RouteLocation` API in M3; widen the peer to `^4.2.0 \|\| ^5.0.0` if compatible |
-| Duende demo IdP availability/config drift                        | Keycloak docker-compose fallback in the playground                                                    |
-| Upstream react-oidc-context behavior changes (we claim parity)   | Migration table + parity notes reference upstream v3; re-verify against upstream before `v1.0.0`      |
-| Name confusion with the unrelated npm `vue-oidc-context` package | README states the scoped name prominently; npm description differentiates                             |
+| Risk                                                             | Mitigation                                                                                                                                                  |
+| ---------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| oidc-client-ts v4 lands with breaking changes                    | Thin-wrapper design keeps the blast radius in `context.ts`; peer range pins to `^3.3` until evaluated                                                       |
+| `vue-router` types leaking into core `.d.ts`                     | Guard lives in a separate entry; M4 includes a compile fixture _without_ vue-router installed                                                               |
+| Two supported vue-router majors (`^4.2 \|\| ^5`) drift apart     | Guard fixture typecheck + runtime verified identical on 4.6.4 and 5.1.0 (2026-07-09); M3 runs the guard suite against both majors (swap-install step in CI) |
+| Duende demo IdP availability/config drift                        | Keycloak docker-compose fallback in the playground                                                                                                          |
+| Upstream react-oidc-context behavior changes (we claim parity)   | Migration table + parity notes reference upstream v3; re-verify against upstream before `v1.0.0`                                                            |
+| Name confusion with the unrelated npm `vue-oidc-context` package | README states the scoped name prominently; npm description differentiates                                                                                   |
