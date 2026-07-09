@@ -1,0 +1,95 @@
+{
+  "name": "@dlukt/vue-oidc-context",
+  "version": "0.0.0",
+  "description": "OpenID Connect (OIDC) & OAuth 2.0 authentication for Vue 3 — a lightweight, fully typed wrapper around oidc-client-ts, ported from react-oidc-context",
+  "type": "module",
+  "license": "MIT",
+  "author": "Darko Luketic <info@icod.de>",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dlukt/vue-oidc-context.git"
+  },
+  "homepage": "https://github.com/dlukt/vue-oidc-context#readme",
+  "bugs": "https://github.com/dlukt/vue-oidc-context/issues",
+  "keywords": [
+    "vue",
+    "vue3",
+    "oidc",
+    "openid-connect",
+    "oauth2",
+    "authentication",
+    "oidc-client-ts"
+  ],
+  "sideEffects": false,
+  "packageManager": "pnpm@11.9.0",
+  "engines": {
+    "node": ">=20"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "files": [
+    "dist"
+  ],
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      }
+    },
+    "./router": {
+      "import": {
+        "types": "./dist/router.d.ts",
+        "default": "./dist/router.js"
+      },
+      "require": {
+        "types": "./dist/router.d.cts",
+        "default": "./dist/router.cjs"
+      }
+    }
+  },
+  "scripts": {
+    "build": "tsdown",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "lint": "eslint . && prettier --check .",
+    "format": "prettier --write .",
+    "prepublishOnly": "pnpm build"
+  },
+  "peerDependencies": {
+    "oidc-client-ts": "^3.3.0",
+    "vue": "^3.5.0",
+    "vue-router": "^4.2.0"
+  },
+  "peerDependenciesMeta": {
+    "vue-router": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@vitest/coverage-v8": "^4.1.10",
+    "@vue/test-utils": "^2.4.11",
+    "eslint": "^10.6.0",
+    "eslint-config-prettier": "^10.1.8",
+    "happy-dom": "^20.10.6",
+    "oidc-client-ts": "^3.5.0",
+    "prettier": "^3.9.4",
+    "tsdown": "^0.22.4",
+    "typescript": "^6.0.3",
+    "typescript-eslint": "^8.63.0",
+    "vitest": "^4.1.10",
+    "vue": "^3.5.39",
+    "vue-router": "^4.6.4"
+  }
+}

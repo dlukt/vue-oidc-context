@@ -55,16 +55,16 @@ vue-oidc-context/
 
 ## 3. Toolchain
 
-| Concern | Choice | Notes |
-|---|---|---|
-| Package manager | pnpm (workspace) | root = publishable lib, `playground/` private member |
-| Language | TypeScript, `strict: true` | target ES2022, `moduleResolution: bundler`, `isolatedDeclarations` if practical |
-| Build | **tsdown** | two entries (`src/index.ts`, `src/router.ts`), ESM + CJS + `.d.ts`/`.d.cts`, treeshake, no minify |
-| Tests | Vitest + happy-dom + @vue/test-utils | plus `expectTypeOf` type tests |
-| Lint/format | ESLint flat config (typescript-eslint) + Prettier | no eslint-plugin-vue needed (no SFCs in `src/`) |
-| Docs | VitePress | deployed to GitHub Pages |
-| Releases | Changesets | manual `changeset` per PR, bot-driven version PRs |
-| Node (dev/CI) | ≥ 20 | library itself is browser-targeted |
+| Concern         | Choice                                            | Notes                                                                                             |
+| --------------- | ------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
+| Package manager | pnpm (workspace)                                  | root = publishable lib, `playground/` private member                                              |
+| Language        | TypeScript, `strict: true`                        | target ES2022, `moduleResolution: bundler`, `isolatedDeclarations` if practical                   |
+| Build           | **tsdown**                                        | two entries (`src/index.ts`, `src/router.ts`), ESM + CJS + `.d.ts`/`.d.cts`, treeshake, no minify |
+| Tests           | Vitest + happy-dom + @vue/test-utils              | plus `expectTypeOf` type tests                                                                    |
+| Lint/format     | ESLint flat config (typescript-eslint) + Prettier | no eslint-plugin-vue needed (no SFCs in `src/`)                                                   |
+| Docs            | VitePress                                         | deployed to GitHub Pages                                                                          |
+| Releases        | Changesets                                        | manual `changeset` per PR, bot-driven version PRs                                                 |
+| Node (dev/CI)   | ≥ 20                                              | library itself is browser-targeted                                                                |
 
 Exact dependency versions are resolved at scaffold time (latest stable); the ranges that matter contractually are the peer ranges in SPEC §3.
 
@@ -76,18 +76,26 @@ Exact dependency versions are resolved at scaffold time (latest stable); the ran
   "type": "module",
   "sideEffects": false,
   "exports": {
-    ".":        { "types": "./dist/index.d.ts",  "import": "./dist/index.js",  "require": "./dist/index.cjs" },
-    "./router": { "types": "./dist/router.d.ts", "import": "./dist/router.js", "require": "./dist/router.cjs" }
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs",
+    },
+    "./router": {
+      "types": "./dist/router.d.ts",
+      "import": "./dist/router.js",
+      "require": "./dist/router.cjs",
+    },
   },
   "files": ["dist"],
   "peerDependencies": {
     "vue": "^3.5.0",
     "oidc-client-ts": "^3.3.0",
-    "vue-router": "^4.2.0"
+    "vue-router": "^4.2.0",
   },
   "peerDependenciesMeta": {
-    "vue-router": { "optional": true }
-  }
+    "vue-router": { "optional": true },
+  },
 }
 ```
 
@@ -167,7 +175,7 @@ Manual E2E checklist (run before each release, documented in `playground/README.
 
 ## 8. CI/CD
 
-- **ci.yml** (push/PR): pnpm install → lint → typecheck → test (with coverage) → build → pack dry-run. Node 20 + 22 matrix.
+- **ci.yml** (push/PR): pnpm install → lint → typecheck → test (with coverage) → build → pack. Node 20/22/24 matrix.
 - **release.yml** (push to main): `changesets/action` — opens/updates the version PR; on merge publishes to npm with `--provenance` (needs `id-token: write`, `NPM_TOKEN`).
 - **docs.yml** (push to main touching `docs/`): build VitePress → deploy to GitHub Pages.
 
@@ -180,10 +188,11 @@ Manual E2E checklist (run before each release, documented in `playground/README.
 
 ## 10. Risks
 
-| Risk | Mitigation |
-|---|---|
-| oidc-client-ts v4 lands with breaking changes | Thin-wrapper design keeps the blast radius in `context.ts`; peer range pins to `^3.3` until evaluated |
-| `vue-router` types leaking into core `.d.ts` | Guard lives in a separate entry; M4 includes a compile fixture *without* vue-router installed |
-| Duende demo IdP availability/config drift | Keycloak docker-compose fallback in the playground |
-| Upstream react-oidc-context behavior changes (we claim parity) | Migration table + parity notes reference upstream v3; re-verify against upstream before `v1.0.0` |
-| Name confusion with the unrelated npm `vue-oidc-context` package | README states the scoped name prominently; npm description differentiates |
+| Risk                                                             | Mitigation                                                                                            |
+| ---------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
+| oidc-client-ts v4 lands with breaking changes                    | Thin-wrapper design keeps the blast radius in `context.ts`; peer range pins to `^3.3` until evaluated |
+| `vue-router` types leaking into core `.d.ts`                     | Guard lives in a separate entry; M4 includes a compile fixture _without_ vue-router installed         |
+| vue-router 5 is out (dev deps resolve 4.x per our `^4.2` peer)   | Evaluate the v5 guard/`RouteLocation` API in M3; widen the peer to `^4.2.0 \|\| ^5.0.0` if compatible |
+| Duende demo IdP availability/config drift                        | Keycloak docker-compose fallback in the playground                                                    |
+| Upstream react-oidc-context behavior changes (we claim parity)   | Migration table + parity notes reference upstream v3; re-verify against upstream before `v1.0.0`      |
+| Name confusion with the unrelated npm `vue-oidc-context` package | README states the scoped name prominently; npm description differentiates                             |

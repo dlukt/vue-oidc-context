@@ -1,11 +1,11 @@
 # vue-oidc-context — Specification
 
-| | |
-|---|---|
-| **Package** | `@dlukt/vue-oidc-context` |
-| **Status** | Draft (pre-implementation) |
-| **Target** | v0.1.0 |
-| **License** | MIT |
+|               |                                                                                                                                      |
+| ------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| **Package**   | `@dlukt/vue-oidc-context`                                                                                                            |
+| **Status**    | Draft (pre-implementation)                                                                                                           |
+| **Target**    | v0.1.0                                                                                                                               |
+| **License**   | MIT                                                                                                                                  |
 | **Reference** | [react-oidc-context](https://github.com/authts/react-oidc-context) v3, [oidc-client-ts](https://github.com/authts/oidc-client-ts) v3 |
 
 This document is the API contract and behavior specification. The implementation roadmap lives in [PLAN.md](./PLAN.md).
@@ -67,17 +67,17 @@ pnpm add @dlukt/vue-oidc-context oidc-client-ts
 
 > The unscoped npm name `vue-oidc-context` is owned by an unrelated package; this project publishes under the `@dlukt` scope. The GitHub repository remains `dlukt/vue-oidc-context`.
 
-| Peer dependency | Range | Notes |
-|---|---|---|
-| `vue` | `^3.5.0` | Uses `app.onUnmount`, `onScopeDispose` |
-| `oidc-client-ts` | `^3.3.0` | Required at runtime |
-| `vue-router` | `^4.2.0` | **Optional** — only needed for the `./router` subpath |
+| Peer dependency  | Range    | Notes                                                 |
+| ---------------- | -------- | ----------------------------------------------------- |
+| `vue`            | `^3.5.0` | Uses `app.onUnmount`, `onScopeDispose`                |
+| `oidc-client-ts` | `^3.3.0` | Required at runtime                                   |
+| `vue-router`     | `^4.2.0` | **Optional** — only needed for the `./router` subpath |
 
 Entry points (`sideEffects: false`, ESM + CJS + type declarations):
 
-| Import | Contents |
-|---|---|
-| `@dlukt/vue-oidc-context` | Core: plugin, composables, components, utils, types |
+| Import                           | Contents                                                                                                 |
+| -------------------------------- | -------------------------------------------------------------------------------------------------------- |
+| `@dlukt/vue-oidc-context`        | Core: plugin, composables, components, utils, types                                                      |
 | `@dlukt/vue-oidc-context/router` | `createAuthGuard` (kept in a subpath so the core entry's type declarations never reference `vue-router`) |
 
 ## 4. Public API
@@ -123,7 +123,9 @@ export interface AuthCallbacks {
    *  triggers automatic signoutCallback() processing. */
   matchSignoutCallback?: (settings: UserManagerSettings) => boolean;
   /** Invoked after signoutCallback() has been processed. */
-  onSignoutCallback?: (resp: SignoutResponse | undefined) => Promise<void> | void;
+  onSignoutCallback?: (
+    resp: SignoutResponse | undefined,
+  ) => Promise<void> | void;
   /** Invoked after removeUser() completes. */
   onRemoveUser?: () => Promise<void> | void;
 }
@@ -158,7 +160,14 @@ The primary consumer API. Injects the nearest `AuthContext` (from the plugin or 
 <script setup lang="ts">
 import { useAuth } from "@dlukt/vue-oidc-context";
 
-const { user, isAuthenticated, isLoading, error, signinRedirect, signoutRedirect } = useAuth();
+const {
+  user,
+  isAuthenticated,
+  isLoading,
+  error,
+  signinRedirect,
+  signoutRedirect,
+} = useAuth();
 </script>
 
 <template>
@@ -212,7 +221,9 @@ export interface AuthContext extends AuthState {
   signinRedirect(args?: SigninRedirectArgs): Promise<void>;
   signinPopup(args?: SigninPopupArgs): Promise<User>;
   signinSilent(args?: SigninSilentArgs): Promise<User | null>;
-  signinResourceOwnerCredentials(args: SigninResourceOwnerCredentialsArgs): Promise<User>;
+  signinResourceOwnerCredentials(
+    args: SigninResourceOwnerCredentialsArgs,
+  ): Promise<User>;
   signoutRedirect(args?: SignoutRedirectArgs): Promise<void>;
   signoutPopup(args?: SignoutPopupArgs): Promise<void>;
   signoutSilent(args?: SignoutSilentArgs): Promise<void>;
@@ -220,14 +231,16 @@ export interface AuthContext extends AuthState {
   // pass-through methods — bound to the UserManager
   removeUser(): Promise<void>; // also invokes onRemoveUser
   clearStaleState(): Promise<void>;
-  querySessionStatus(args?: QuerySessionStatusArgs): Promise<SessionStatus | null>;
+  querySessionStatus(
+    args?: QuerySessionStatusArgs,
+  ): Promise<SessionStatus | null>;
   revokeTokens(types?: RevokeTokensTypes): Promise<void>;
   startSilentRenew(): void;
   stopSilentRenew(): void;
 }
 ```
 
-> **Reactivity gotcha.** `AuthContext` is a plain object holding refs (VueUse convention): **destructure it** — `const { user } = useAuth()` — and refs auto-unwrap in templates. If you keep the whole object (`const auth = useAuth()`), nested refs do *not* unwrap in templates: write `auth.user.value` in script and `auth.user?.value` in templates, or destructure instead.
+> **Reactivity gotcha.** `AuthContext` is a plain object holding refs (VueUse convention): **destructure it** — `const { user } = useAuth()` — and refs auto-unwrap in templates. If you keep the whole object (`const auth = useAuth()`), nested refs do _not_ unwrap in templates: write `auth.user.value` in script and `auth.user?.value` in templates, or destructure instead.
 
 ### 4.3 `<AuthProvider>`
 
@@ -310,10 +323,14 @@ export interface AuthGuardOptions {
   shouldProtect?: (to: RouteLocationNormalized) => boolean;
   /** Args passed to signinRedirect for unauthenticated users.
    *  Default: { state: { returnTo: to.fullPath } } */
-  signinArgs?: SigninRedirectArgs | ((to: RouteLocationNormalized) => SigninRedirectArgs);
+  signinArgs?:
+    SigninRedirectArgs | ((to: RouteLocationNormalized) => SigninRedirectArgs);
 }
 
-export function createAuthGuard(auth: OidcAuth, options?: AuthGuardOptions): NavigationGuard;
+export function createAuthGuard(
+  auth: OidcAuth,
+  options?: AuthGuardOptions,
+): NavigationGuard;
 ```
 
 Behavior:
@@ -391,15 +408,15 @@ export const AUTH_CONTEXT_KEY: InjectionKey<AuthContext>;
 
 From `@dlukt/vue-oidc-context`:
 
-| Export | Kind |
-|---|---|
-| `createOidcAuth` | function |
-| `useAuth`, `useAutoSignin` | composables |
-| `AuthProvider`, `AuthenticationRequired` | components |
-| `hasAuthParams` | util |
-| `AUTH_CONTEXT_KEY` | injection key |
-| `AuthState`, `AuthContext`, `AuthCallbacks`, `OidcAuthOptions`, `OidcAuth`, `AuthProviderProps`, `AuthenticationRequiredProps`, `UseAutoSigninOptions`, `NavigatorKey`, `ErrorContext` | types |
-| `User`, `UserManager`, `WebStorageStateStore`, `InMemoryWebStorage`, `Log` and the settings/args types used above | re-exports from oidc-client-ts (convenience) |
+| Export                                                                                                                                                                                 | Kind                                         |
+| -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------- |
+| `createOidcAuth`                                                                                                                                                                       | function                                     |
+| `useAuth`, `useAutoSignin`                                                                                                                                                             | composables                                  |
+| `AuthProvider`, `AuthenticationRequired`                                                                                                                                               | components                                   |
+| `hasAuthParams`                                                                                                                                                                        | util                                         |
+| `AUTH_CONTEXT_KEY`                                                                                                                                                                     | injection key                                |
+| `AuthState`, `AuthContext`, `AuthCallbacks`, `OidcAuthOptions`, `OidcAuth`, `AuthProviderProps`, `AuthenticationRequiredProps`, `UseAutoSigninOptions`, `NavigatorKey`, `ErrorContext` | types                                        |
+| `User`, `UserManager`, `WebStorageStateStore`, `InMemoryWebStorage`, `Log` and the settings/args types used above                                                                      | re-exports from oidc-client-ts (convenience) |
 
 From `@dlukt/vue-oidc-context/router`: `createAuthGuard`, `AuthGuardOptions`.
 
@@ -427,24 +444,24 @@ Note (parity): the library does **not** clean auth params from the URL. That is 
 
 On initialization the context subscribes to four `UserManagerEvents`; all are unsubscribed on teardown (§5.5):
 
-| Event | Effect on state |
-|---|---|
-| `addUserLoaded` | `user` ← loaded user, `error` cleared |
-| `addUserUnloaded` | `user` ← `null` |
-| `addUserSignedOut` | signed-out flag set: `isAuthenticated` becomes `false`, **`user` is retained** (parity with react-oidc-context) |
-| `addSilentRenewError` | `error` ← error with `source: "renewSilent"` |
+| Event                 | Effect on state                                                                                                 |
+| --------------------- | --------------------------------------------------------------------------------------------------------------- |
+| `addUserLoaded`       | `user` ← loaded user, `error` cleared                                                                           |
+| `addUserUnloaded`     | `user` ← `null`                                                                                                 |
+| `addUserSignedOut`    | signed-out flag set: `isAuthenticated` becomes `false`, **`user` is retained** (parity with react-oidc-context) |
+| `addSilentRenewError` | `error` ← error with `source: "renewSilent"`                                                                    |
 
 Any further events (`addAccessTokenExpiring`, …) are the app's business via `auth.events`.
 
 ### 5.3 State semantics
 
-| Field | Semantics |
-|---|---|
-| `user` | `undefined` before init settles → `User` or `null` afterwards; updated by events |
-| `isLoading` | `true` initially; `false` once init settles; `true` again while a navigator method is in flight |
+| Field             | Semantics                                                                                                                                                                                                                                                                              |
+| ----------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `user`            | `undefined` before init settles → `User` or `null` afterwards; updated by events                                                                                                                                                                                                       |
+| `isLoading`       | `true` initially; `false` once init settles; `true` again while a navigator method is in flight                                                                                                                                                                                        |
 | `isAuthenticated` | `!!user && !user.expired && !signedOut` — a computed re-evaluated when `user` or the signed-out flag changes. **Not time-reactive**: an access token expiring does not by itself flip it (same as react-oidc-context). Gate API calls on `user.access_token`/events, not on this flag. |
-| `activeNavigator` | Set to the method name for the duration of any wrapped navigator call |
-| `error` | Set by init failures, navigator failures, and silent-renew errors; cleared when a user is loaded |
+| `activeNavigator` | Set to the method name for the duration of any wrapped navigator call                                                                                                                                                                                                                  |
+| `error`           | Set by init failures, navigator failures, and silent-renew errors; cleared when a user is loaded                                                                                                                                                                                       |
 
 The signed-out flag is reset whenever a user is loaded (sign-in after sign-out works).
 
@@ -506,18 +523,18 @@ Normalization rule: thrown `Error` instances are tagged with `source`; non-`Erro
 
 ## 9. Migration from react-oidc-context
 
-| react-oidc-context | @dlukt/vue-oidc-context |
-|---|---|
-| `<AuthProvider {...oidcConfig}>` (app root) | `app.use(createOidcAuth(oidcConfig))` — same flat config object |
-| `<AuthProvider>` (nested / multi-IdP) | `<AuthProvider :settings="…">` component |
-| `const auth = useAuth()` | `const { user, isAuthenticated, … } = useAuth()` — destructure; fields are refs |
-| `auth.isLoading` (plain boolean) | `isLoading.value` in script, `isLoading` in templates |
-| `withAuthenticationRequired(Component, opts)` | `createAuthGuard(auth)` + `meta.requiresAuth` (router apps) or `<AuthenticationRequired>` (component tree) |
-| `withAuth(Component)` | not ported — use `useAuth()` / provider slot props |
-| `useAutoSignin(opts)` | `useAutoSignin(opts)` — identical |
-| `hasAuthParams()` | `hasAuthParams()` — identical |
-| `AuthContext` (React context object) | `AUTH_CONTEXT_KEY` (Vue injection key) |
-| `onSigninCallback` / `skipSigninCallback` / `matchSignoutCallback` / `onSignoutCallback` / `onRemoveUser` | identical names and semantics |
+| react-oidc-context                                                                                        | @dlukt/vue-oidc-context                                                                                    |
+| --------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| `<AuthProvider {...oidcConfig}>` (app root)                                                               | `app.use(createOidcAuth(oidcConfig))` — same flat config object                                            |
+| `<AuthProvider>` (nested / multi-IdP)                                                                     | `<AuthProvider :settings="…">` component                                                                   |
+| `const auth = useAuth()`                                                                                  | `const { user, isAuthenticated, … } = useAuth()` — destructure; fields are refs                            |
+| `auth.isLoading` (plain boolean)                                                                          | `isLoading.value` in script, `isLoading` in templates                                                      |
+| `withAuthenticationRequired(Component, opts)`                                                             | `createAuthGuard(auth)` + `meta.requiresAuth` (router apps) or `<AuthenticationRequired>` (component tree) |
+| `withAuth(Component)`                                                                                     | not ported — use `useAuth()` / provider slot props                                                         |
+| `useAutoSignin(opts)`                                                                                     | `useAutoSignin(opts)` — identical                                                                          |
+| `hasAuthParams()`                                                                                         | `hasAuthParams()` — identical                                                                              |
+| `AuthContext` (React context object)                                                                      | `AUTH_CONTEXT_KEY` (Vue injection key)                                                                     |
+| `onSigninCallback` / `skipSigninCallback` / `matchSignoutCallback` / `onSignoutCallback` / `onRemoveUser` | identical names and semantics                                                                              |
 
 ## 10. Future work
 
