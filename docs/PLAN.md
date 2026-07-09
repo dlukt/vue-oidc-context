@@ -64,7 +64,7 @@ vue-oidc-context/
 | Lint/format     | ESLint flat config (typescript-eslint) + Prettier | no eslint-plugin-vue needed (no SFCs in `src/`)                                                   |
 | Docs            | VitePress                                         | deployed to GitHub Pages                                                                          |
 | Releases        | Changesets                                        | manual `changeset` per PR, bot-driven version PRs                                                 |
-| Node (dev/CI)   | ≥ 20                                              | library itself is browser-targeted                                                                |
+| Node (dev/CI)   | ≥ 22.13 (pnpm 11 floor)                           | library itself is browser-targeted; published `engines` floor stays `>=20`                        |
 
 Exact dependency versions are resolved at scaffold time (latest stable); the ranges that matter contractually are the peer ranges in SPEC §3.
 
@@ -175,7 +175,7 @@ Manual E2E checklist (run before each release, documented in `playground/README.
 
 ## 8. CI/CD
 
-- **ci.yml** (push/PR): pnpm install → lint → typecheck → test (with coverage) → build → pack. Node 20/22/24 matrix.
+- **ci.yml** (push/PR): pnpm install → lint → typecheck → test (with coverage) → build → pack. Node 22/24 matrix (Node 20 is EOL since 2026-04 and pnpm 11 requires ≥ 22.13).
 - **release.yml** (push to main): `changesets/action` — opens/updates the version PR; on merge publishes to npm with `--provenance` (needs `id-token: write`, `NPM_TOKEN`).
 - **docs.yml** (push to main touching `docs/`): build VitePress → deploy to GitHub Pages.
 
