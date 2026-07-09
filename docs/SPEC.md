@@ -137,7 +137,7 @@ export type OidcAuthOptions =
   | (AuthCallbacks & { userManager: UserManager });
 
 export interface OidcAuth extends AuthContext {
-  /** Vue plugin hook: provides the AuthContext app-wide and starts initialization. */
+  /** Vue plugin hook: provides the AuthContext to the app's components. */
   install(app: App): void;
   /** Resolves once the initialization sequence (§5.1) has settled
    *  (successfully or with `error` set). Useful before router.isReady(). */

@@ -1,8 +1,42 @@
 /**
- * @dlukt/vue-oidc-context — main entry.
- *
- * Placeholder: the public API specified in docs/SPEC.md §4 lands in milestone M1
- * (docs/PLAN.md). This export exists only so the M0 scaffold builds, tests, and
- * packs a non-empty module.
+ * @dlukt/vue-oidc-context — OpenID Connect & OAuth 2.0 authentication for Vue 3.
+ * A lightweight, fully typed wrapper around oidc-client-ts, ported from
+ * react-oidc-context. API contract: docs/SPEC.md.
  */
-export const SCAFFOLD_PLACEHOLDER = true;
+export { AUTH_CONTEXT_KEY, useAuth } from "./injection";
+export { createOidcAuth } from "./plugin";
+export { hasAuthParams } from "./utils";
+export type {
+  AuthCallbacks,
+  AuthContext,
+  AuthState,
+  ErrorContext,
+  ErrorSource,
+  NavigatorKey,
+  OidcAuth,
+  OidcAuthOptions,
+} from "./types";
+
+// Convenience re-exports from oidc-client-ts (SPEC §4.9).
+export {
+  InMemoryWebStorage,
+  Log,
+  User,
+  UserManager,
+  WebStorageStateStore,
+} from "oidc-client-ts";
+export type {
+  QuerySessionStatusArgs,
+  RevokeTokensTypes,
+  SessionStatus,
+  SigninPopupArgs,
+  SigninRedirectArgs,
+  SigninResourceOwnerCredentialsArgs,
+  SigninSilentArgs,
+  SignoutPopupArgs,
+  SignoutRedirectArgs,
+  SignoutSilentArgs,
+  SignoutResponse,
+  UserManagerEvents,
+  UserManagerSettings,
+} from "oidc-client-ts";
