@@ -1,0 +1,26 @@
+{
+  // Compile fixture (PLAN §5 M4): the core entry's published declarations must
+  // typecheck for consumers who never install vue-router (SPEC §3).
+  // Run via `pnpm typecheck:fixtures` after `pnpm build`.
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "strict": true,
+    "noEmit": true,
+    "types": [],
+    // false so errors *inside* dist/index.d.ts (e.g. an unresolvable or
+    // poisoned vue-router import) fail this fixture instead of being skipped.
+    "skipLibCheck": false,
+    "paths": {
+      // The package under test, as consumers resolve it — but straight from dist.
+      "@dlukt/vue-oidc-context": ["../../../dist/index.d.ts"],
+      // Poison: vue-router is installed at the workspace root (dev dependency),
+      // so plain resolution would find it. Any vue-router reference reachable
+      // from the core entry resolves to an empty module and fails to compile.
+      "vue-router": ["./vue-router.poison.d.ts"]
+    }
+  },
+  "include": ["consumer.ts"]
+}

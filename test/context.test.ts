@@ -1,7 +1,11 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { UserManager as RealUserManager } from "oidc-client-ts";
+import type {
+  User as OidcUser,
+  UserManager as RealUserManager,
+} from "oidc-client-ts";
 
 import { createOidcAuth } from "../src/index";
+import type { NavigatorKey } from "../src/index";
 import {
   fireSilentRenewError,
   fireUserLoaded,
@@ -73,12 +77,14 @@ describe("initialization (SPEC §5.1)", () => {
 
   it("falls back to getUser when signinCallback yields no user (popup/silent callback)", async () => {
     umMock.signinCallback.mockResolvedValue(undefined);
+    const onSigninCallback = vi.fn();
     setUrl("/?code=abc&state=xyz");
 
-    const auth = createOidcAuth(baseSettings);
+    const auth = createOidcAuth({ ...baseSettings, onSigninCallback });
     await auth.initialized;
 
     expect(umMock.signinCallback).toHaveBeenCalled();
+    expect(onSigninCallback).toHaveBeenCalledWith(undefined);
     expect(umMock.getUser).toHaveBeenCalled();
   });
 
@@ -104,6 +110,24 @@ describe("initialization (SPEC §5.1)", () => {
     expect(auth.isLoading.value).toBe(false);
   });
 
+  it("clears an error raised mid-initialization once initialization succeeds", async () => {
+    let resolveGetUser!: (user: OidcUser | null) => void;
+    umMock.getUser.mockReturnValue(
+      new Promise<OidcUser | null>((resolve) => {
+        resolveGetUser = resolve;
+      }),
+    );
+
+    const auth = createOidcAuth(baseSettings);
+    fireSilentRenewError(new Error("renew failed"));
+    expect(auth.error.value?.source).toBe("renewSilent");
+
+    resolveGetUser(makeUser());
+    await auth.initialized;
+    expect(auth.error.value).toBeUndefined();
+    expect(auth.isAuthenticated.value).toBe(true);
+  });
+
   it("processes the signout callback when matchSignoutCallback returns true", async () => {
     const response = {
       state: "s",
@@ -122,6 +146,30 @@ describe("initialization (SPEC §5.1)", () => {
     expect(matchSignoutCallback).toHaveBeenCalledWith(baseSettings);
     expect(umMock.signoutCallback).toHaveBeenCalledTimes(1);
     expect(onSignoutCallback).toHaveBeenCalledWith(response);
+  });
+
+  it("does not process the signout callback when matchSignoutCallback returns false", async () => {
+    const matchSignoutCallback = vi.fn(() => false);
+
+    const auth = createOidcAuth({ ...baseSettings, matchSignoutCallback });
+    await auth.initialized;
+
+    expect(matchSignoutCallback).toHaveBeenCalledWith(baseSettings);
+    expect(umMock.signoutCallback).not.toHaveBeenCalled();
+  });
+
+  it("still processes the signout callback after a signin callback failure", async () => {
+    umMock.signinCallback.mockRejectedValue(new Error("bad callback"));
+    setUrl("/?code=abc&state=xyz");
+
+    const auth = createOidcAuth({
+      ...baseSettings,
+      matchSignoutCallback: () => true,
+    });
+    await auth.initialized;
+
+    expect(umMock.signoutCallback).toHaveBeenCalledTimes(1);
+    expect(auth.error.value?.source).toBe("signinCallback");
   });
 
   it("surfaces signout callback failures as error with source signoutCallback", async () => {
@@ -208,26 +256,46 @@ describe("event subscriptions (SPEC §5.2)", () => {
 });
 
 describe("navigator methods (SPEC §5.4)", () => {
-  it("tracks activeNavigator and isLoading for the duration of the call", async () => {
-    const auth = createOidcAuth(baseSettings);
-    await auth.initialized;
+  type NavigatorMock = ReturnType<
+    typeof vi.fn<(args?: unknown) => Promise<unknown>>
+  >;
 
-    let release!: () => void;
-    umMock.signinRedirect.mockReturnValue(
-      new Promise<void>((resolve) => {
-        release = resolve;
-      }),
-    );
+  const navigatorCases: [NavigatorKey, Record<string, unknown>][] = [
+    ["signinRedirect", { state: { returnTo: "/deep" } }],
+    ["signinPopup", { popupWindowTarget: "auth" }],
+    ["signinSilent", { resource: "api" }],
+    ["signinResourceOwnerCredentials", { username: "u", password: "p" }],
+    ["signoutRedirect", { state: "s" }],
+    ["signoutPopup", { popupWindowTarget: "auth" }],
+    ["signoutSilent", { state: "s" }],
+  ];
 
-    const pending = auth.signinRedirect();
-    expect(auth.activeNavigator.value).toBe("signinRedirect");
-    expect(auth.isLoading.value).toBe(true);
+  it.each(navigatorCases)(
+    "%s delegates with args and tracks activeNavigator/isLoading for the duration",
+    async (method, args) => {
+      const auth = createOidcAuth(baseSettings);
+      await auth.initialized;
 
-    release();
-    await pending;
-    expect(auth.activeNavigator.value).toBeUndefined();
-    expect(auth.isLoading.value).toBe(false);
-  });
+      const mock = umMock[method] as unknown as NavigatorMock;
+      let release!: (value?: unknown) => void;
+      mock.mockReturnValue(
+        new Promise((resolve) => {
+          release = resolve;
+        }),
+      );
+
+      const invoke = auth[method] as (args?: unknown) => Promise<unknown>;
+      const pending = invoke(args);
+      expect(auth.activeNavigator.value).toBe(method);
+      expect(auth.isLoading.value).toBe(true);
+
+      release();
+      await pending;
+      expect(mock).toHaveBeenCalledWith(args);
+      expect(auth.activeNavigator.value).toBeUndefined();
+      expect(auth.isLoading.value).toBe(false);
+    },
+  );
 
   it("passes arguments through and returns the result", async () => {
     const user = makeUser();
@@ -251,6 +319,17 @@ describe("navigator methods (SPEC §5.4)", () => {
     expect(auth.activeNavigator.value).toBeUndefined();
     expect(auth.isLoading.value).toBe(false);
   });
+
+  it("wraps non-Error rejections into an Error with innerError (SPEC §7)", async () => {
+    umMock.signinSilent.mockRejectedValue("string failure");
+    const auth = createOidcAuth(baseSettings);
+    await auth.initialized;
+
+    await expect(auth.signinSilent()).rejects.toBe("string failure");
+    expect(auth.error.value).toBeInstanceOf(Error);
+    expect(auth.error.value?.source).toBe("signinSilent");
+    expect(auth.error.value?.innerError).toBe("string failure");
+  });
 });
 
 describe("pass-through methods", () => {
@@ -262,6 +341,14 @@ describe("pass-through methods", () => {
     await auth.removeUser();
     expect(umMock.removeUser).toHaveBeenCalledTimes(1);
     expect(onRemoveUser).toHaveBeenCalledTimes(1);
+  });
+
+  it("removeUser works without an onRemoveUser callback", async () => {
+    const auth = createOidcAuth(baseSettings);
+    await auth.initialized;
+
+    await expect(auth.removeUser()).resolves.toBeUndefined();
+    expect(umMock.removeUser).toHaveBeenCalledTimes(1);
   });
 
   it("delegates the remaining UserManager methods", async () => {

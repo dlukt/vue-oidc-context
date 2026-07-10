@@ -15,5 +15,7 @@
     "skipLibCheck": true,
     "noEmit": true
   },
-  "include": ["src", "test", "tsdown.config.ts", "vitest.config.ts"]
+  "include": ["src", "test", "tsdown.config.ts", "vitest.config.ts"],
+  // Compiles against dist/ with its own tsconfig — see `typecheck:fixtures`.
+  "exclude": ["test/fixtures"]
 }

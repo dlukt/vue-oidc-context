@@ -40,7 +40,10 @@ vue-oidc-context/
 │   ├── router.ts                 # subpath entry: createAuthGuard(), AuthGuardOptions
 │   └── utils.ts                  # hasAuthParams(), error normalization, isBrowser
 ├── test/                         # Vitest suites, mirrors src/ file names
-│   └── mocks/oidc-client-ts.ts   # shared UserManager mock
+│   ├── mocks/oidc-client-ts.ts   # shared UserManager mock
+│   ├── types.test-d.ts           # expectTypeOf type tests (Vitest typecheck mode)
+│   └── fixtures/
+│       └── core-no-vue-router/   # M4 compile fixture: dist core types without vue-router
 ├── playground/                   # private Vite app (workspace member), manual E2E
 ├── docs/                         # VitePress site; SPEC.md and PLAN.md live here
 │   └── .vitepress/
@@ -160,6 +163,9 @@ Each milestone ends green: `pnpm lint && pnpm typecheck && pnpm test && pnpm bui
 - **Component tests** with @vue/test-utils: plugin install + `useAuth` in a child, missing-provider throw, `<AuthProvider>` nesting/slot props, `<AuthenticationRequired>` render/redirect logic.
 - **URL-dependent tests** (`hasAuthParams`, init with auth params) drive happy-dom's location.
 - **Guard tests** call the guard as a plain async function with fabricated `RouteLocationNormalized` objects — no real router needed.
+- **Type tests** (`test/types.test-d.ts`, Vitest typecheck mode): options union (settings XOR `userManager`, negative cases via `@ts-expect-error`), read-only state refs, slot-prop unwrapping, guard signature. Root `tsc --noEmit` compiles the same file, so the vue-router@4 CI swap re-validates the guard types against the older major for free.
+- **No-vue-router compile fixture** (`test/fixtures/core-no-vue-router`): compiles a consumer of the built `dist/` core declarations with `vue-router` `paths`-poisoned to an empty module and `skipLibCheck: false` — any vue-router reference reachable from `dist/index.d.ts` fails the compile. Run with `pnpm typecheck:fixtures` after `pnpm build`.
+- **Coverage** on `src/` is enforced at 100% statements/branches/functions/lines via Vitest thresholds (M4).
 - **What is deliberately not auto-tested:** real IdP round-trips (redirects leave the test runner) — covered by the playground (M5) instead.
 
 ## 7. Playground and manual verification
@@ -175,7 +181,7 @@ Manual E2E checklist (run before each release, documented in `playground/README.
 
 ## 8. CI/CD
 
-- **ci.yml** (push/PR): pnpm install → lint → typecheck → test (with coverage) → build → pack → vue-router@4 swap-install (`pnpm add -Dw`) + typecheck + router suite re-run (M3). Node 22/24 matrix (Node 20 is EOL since 2026-04 and pnpm 11 requires ≥ 22.13).
+- **ci.yml** (push/PR): pnpm install → lint → typecheck → test (with coverage) → build → no-vue-router type fixture (M4) → pack → vue-router@4 swap-install (`pnpm add -Dw`) + typecheck + router suite re-run (M3). Node 22/24 matrix (Node 20 is EOL since 2026-04 and pnpm 11 requires ≥ 22.13).
 - **release.yml** (push to main): `changesets/action` — opens/updates the version PR; on merge publishes to npm with `--provenance` (needs `id-token: write`, `NPM_TOKEN`).
 - **docs.yml** (push to main touching `docs/`): build VitePress → deploy to GitHub Pages.
 

@@ -4,6 +4,7 @@ import { createApp, defineComponent, h, nextTick } from "vue";
 
 import { createOidcAuth, useAuth } from "../src/index";
 import {
+  fireUserLoaded,
   makeUser,
   resetOidcClientMock,
   subscriberCounts,
@@ -85,6 +86,39 @@ describe("createOidcAuth plugin + useAuth (SPEC §4.1/§4.2)", () => {
     } finally {
       warn.mockRestore();
     }
+  });
+
+  it("shares state across a second app and disposes only after the last unmount (SPEC §4.1/§5.5)", async () => {
+    umMock.getUser.mockResolvedValue(makeUser({ profile: { sub: "shared" } }));
+    const auth = createOidcAuth(baseSettings);
+    await auth.initialized;
+
+    const Child = defineComponent({
+      setup() {
+        const { user } = useAuth();
+        return () => h("div", user.value?.profile.sub ?? "anonymous");
+      },
+    });
+
+    const first = mount(Child, { global: { plugins: [auth] } });
+    const second = mount(Child, { global: { plugins: [auth] } });
+    // One shared context: a single subscription set serves both apps.
+    expect(subscriberCounts().userLoaded).toBe(1);
+    expect(first.text()).toBe("shared");
+    expect(second.text()).toBe("shared");
+
+    fireUserLoaded(makeUser({ profile: { sub: "renewed" } }));
+    await nextTick();
+    expect(first.text()).toBe("renewed");
+    expect(second.text()).toBe("renewed");
+
+    first.unmount();
+    expect(subscriberCounts().userLoaded).toBe(1);
+
+    second.unmount();
+    expect(subscriberCounts().userLoaded).toBe(0);
+    // Teardown only unsubscribes — silent renew keeps running (SPEC §5.5).
+    expect(umMock.stopSilentRenew).not.toHaveBeenCalled();
   });
 
   it("unsubscribes UserManager events when the app unmounts (SPEC §5.5)", async () => {

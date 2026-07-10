@@ -59,6 +59,7 @@
   "scripts": {
     "build": "tsdown",
     "typecheck": "tsc --noEmit",
+    "typecheck:fixtures": "tsc -p test/fixtures/core-no-vue-router",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",

@@ -11,6 +11,8 @@ export default tseslint.config(
       "node_modules/",
       "playground/",
       "docs/.vitepress/",
+      // Typechecks against dist/, which need not exist when linting.
+      "test/fixtures/",
     ],
   },
   js.configs.recommended,
