@@ -3,6 +3,8 @@
  * A lightweight, fully typed wrapper around oidc-client-ts, ported from
  * react-oidc-context. API contract: docs/SPEC.md.
  */
+export { AuthenticationRequired } from "./AuthenticationRequired";
+export type { AuthenticationRequiredProps } from "./AuthenticationRequired";
 export { AuthProvider } from "./AuthProvider";
 export type { AuthProviderProps, AuthProviderSlotProps } from "./AuthProvider";
 export { AUTH_CONTEXT_KEY, useAuth } from "./injection";

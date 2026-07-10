@@ -28,3 +28,8 @@ jobs:
       - run: pnpm test:coverage
       - run: pnpm build
       - run: pnpm pack
+      - name: Guard suite against vue-router 4 (oldest supported peer major)
+        run: |
+          pnpm add -Dw "vue-router@^4.2.0"
+          pnpm typecheck
+          pnpm vitest run test/router.test.ts

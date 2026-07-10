@@ -3,7 +3,7 @@
 |               |                                                                                                                                      |
 | ------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
 | **Package**   | `@dlukt/vue-oidc-context`                                                                                                            |
-| **Status**    | Draft (implementation in progress — M2 of [PLAN.md](./PLAN.md) done)                                                                 |
+| **Status**    | Draft (implementation in progress — M3 of [PLAN.md](./PLAN.md) done)                                                                 |
 | **Target**    | v0.1.0                                                                                                                               |
 | **License**   | MIT                                                                                                                                  |
 | **Reference** | [react-oidc-context](https://github.com/authts/react-oidc-context) v3, [oidc-client-ts](https://github.com/authts/oidc-client-ts) v3 |
@@ -348,7 +348,7 @@ Behavior:
 1. If `shouldProtect(to)` is false → allow navigation.
 2. Await `auth.initialized` (so a hard refresh on a protected route waits for the session lookup / signin callback).
 3. If `isAuthenticated` → allow.
-4. Otherwise call `auth.signinRedirect(signinArgs)` and cancel the navigation (`return false`).
+4. Otherwise call `auth.signinRedirect(signinArgs)` and cancel the navigation (`return false`). If `signinRedirect` rejects, the failure lands on `error` (§5.4) and the navigation is still cancelled.
 
 The guard takes the `OidcAuth` instance **explicitly** — it never relies on `inject()`/`runWithContext`, so it works regardless of registration order or router version details.
 
@@ -393,7 +393,7 @@ export interface AuthenticationRequiredProps {
 }
 ```
 
-Behavior: renders the default slot while `isAuthenticated`; otherwise renders the `#redirecting` slot (default: nothing) and — once `!isLoading`, no `activeNavigator`, and no auth params are in the URL — invokes the signin method a single time.
+Behavior: renders the default slot while `isAuthenticated`; otherwise renders the `#redirecting` slot (default: nothing) and — once `!isLoading`, no `activeNavigator`, and no auth params are in the URL — invokes the signin method a single time per component instance. A failed attempt is not retried; the failure surfaces on `error` per §5.4.
 
 ### 4.7 `hasAuthParams(location?)`
 
