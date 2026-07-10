@@ -1,2 +1,7 @@
 packages:
+  # "." makes the publishable root visible to changesets (@manypkg/get-packages).
+  - .
   - playground
+allowBuilds:
+  # esbuild's postinstall places its platform binary (needed by VitePress's vite).
+  esbuild: true

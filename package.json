@@ -9,7 +9,7 @@
     "type": "git",
     "url": "git+https://github.com/dlukt/vue-oidc-context.git"
   },
-  "homepage": "https://github.com/dlukt/vue-oidc-context#readme",
+  "homepage": "https://dlukt.github.io/vue-oidc-context/",
   "bugs": "https://github.com/dlukt/vue-oidc-context/issues",
   "keywords": [
     "vue",
@@ -66,6 +66,10 @@
     "lint": "eslint . && prettier --check .",
     "format": "prettier --write .",
     "play": "pnpm build && pnpm --filter playground dev",
+    "docs:dev": "vitepress dev docs",
+    "docs:build": "vitepress build docs",
+    "docs:preview": "vitepress preview docs",
+    "release": "pnpm build && changeset publish",
     "prepublishOnly": "pnpm build"
   },
   "peerDependencies": {
@@ -79,6 +83,7 @@
     }
   },
   "devDependencies": {
+    "@changesets/cli": "^2.31.0",
     "@eslint/js": "^10.0.1",
     "@vitest/coverage-v8": "^4.1.10",
     "@vue/test-utils": "^2.4.11",
@@ -90,6 +95,7 @@
     "tsdown": "^0.22.4",
     "typescript": "^6.0.3",
     "typescript-eslint": "^8.63.0",
+    "vitepress": "^1.6.4",
     "vitest": "^4.1.10",
     "vue": "^3.5.39",
     "vue-router": "^5.1.0"

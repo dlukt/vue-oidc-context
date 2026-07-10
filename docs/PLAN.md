@@ -182,7 +182,7 @@ Manual E2E checklist (run before each release, documented in `playground/README.
 ## 8. CI/CD
 
 - **ci.yml** (push/PR): pnpm install → lint → typecheck → test (with coverage) → build → no-vue-router type fixture (M4) → playground build against the packaged entries (M5) → pack → vue-router@4 swap-install (`pnpm add -Dw`) + typecheck + router suite re-run (M3). Node 22/24 matrix (Node 20 is EOL since 2026-04 and pnpm 11 requires ≥ 22.13).
-- **release.yml** (push to main): `changesets/action` — opens/updates the version PR; on merge publishes to npm with `--provenance` (needs `id-token: write`, `NPM_TOKEN`).
+- **release.yml** (push to main): `changesets/action` — opens/updates the version PR; on merge publishes to npm via OIDC **trusted publishing** (no npm token; needs `id-token: write`, npm ≥ 11.5.1, and the trusted-publisher config on npmjs.com pointing at `release.yml`). Provenance is automatic with trusted publishing. The package was bootstrapped once with a local `npm publish` (v0.0.0) because trusted publishers can only be configured on existing packages.
 - **docs.yml** (push to main touching `docs/`): build VitePress → deploy to GitHub Pages.
 
 ## 9. Release and versioning

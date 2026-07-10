@@ -3,7 +3,7 @@
 |               |                                                                                                                                      |
 | ------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
 | **Package**   | `@dlukt/vue-oidc-context`                                                                                                            |
-| **Status**    | Draft (implementation in progress — M5 of [PLAN.md](./PLAN.md) implemented; manual E2E checklist in `playground/README.md`)          |
+| **Status**    | Implemented through M6 of [PLAN.md](./PLAN.md) — release of v0.1.0 pending (manual E2E checklist in `playground/README.md`)          |
 | **Target**    | v0.1.0                                                                                                                               |
 | **License**   | MIT                                                                                                                                  |
 | **Reference** | [react-oidc-context](https://github.com/authts/react-oidc-context) v3, [oidc-client-ts](https://github.com/authts/oidc-client-ts) v3 |
