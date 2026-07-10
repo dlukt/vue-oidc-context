@@ -3,7 +3,7 @@
 |               |                                                                                                                                      |
 | ------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
 | **Package**   | `@dlukt/vue-oidc-context`                                                                                                            |
-| **Status**    | Draft (implementation in progress — M4 of [PLAN.md](./PLAN.md) done)                                                                 |
+| **Status**    | Draft (implementation in progress — M5 of [PLAN.md](./PLAN.md) implemented; manual E2E checklist in `playground/README.md`)          |
 | **Target**    | v0.1.0                                                                                                                               |
 | **License**   | MIT                                                                                                                                  |
 | **Reference** | [react-oidc-context](https://github.com/authts/react-oidc-context) v3, [oidc-client-ts](https://github.com/authts/oidc-client-ts) v3 |
@@ -357,10 +357,14 @@ Returning to the original route is the app's choice via `onSigninCallback` (the 
 ```ts
 onSigninCallback: (user) => {
   const returnTo = (user?.state as { returnTo?: string } | undefined)?.returnTo ?? "/";
-  window.history.replaceState({}, document.title, returnTo);
-  // or: router.replace(returnTo)
+  void router.replace(returnTo); // deliberately not awaited — see below
 },
 ```
+
+Two pitfalls when restoring the route (found during playground verification, PLAN M5):
+
+- **Do not `await` router navigation inside `onSigninCallback`.** The guard on the target route awaits `auth.initialized`, and `initialized` resolves only after `onSigninCallback` returns (§5.1) — awaiting the navigation deadlocks both. Fire-and-forget (`void router.replace(...)`) is safe: the guard proceeds as soon as initialization settles.
+- **`window.history.replaceState` alone is not enough in a vue-router app.** The router usually has already resolved its initial navigation against the callback URL and does not observe `replaceState`, so the rendered route would not match the restored URL. Use `router.replace` there; `replaceState` is for router-less apps.
 
 Recommended `RouteMeta` augmentation (documented, not shipped):
 

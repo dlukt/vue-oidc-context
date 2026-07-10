@@ -1,0 +1,18 @@
+# Offline fallback IdP for the playground (see ../README.md).
+#
+#   docker compose up
+#
+# Admin console:  http://localhost:8080/admin   (admin / admin)
+# Realm:          playground — imported from realm-playground.json on first start
+# Demo login:     demo / demo
+services:
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.3
+    command: start-dev --import-realm
+    environment:
+      KC_BOOTSTRAP_ADMIN_USERNAME: admin
+      KC_BOOTSTRAP_ADMIN_PASSWORD: admin
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./realm-playground.json:/opt/keycloak/data/import/realm-playground.json:ro

@@ -65,6 +65,7 @@
     "test:coverage": "vitest run --coverage",
     "lint": "eslint . && prettier --check .",
     "format": "prettier --write .",
+    "play": "pnpm build && pnpm --filter playground dev",
     "prepublishOnly": "pnpm build"
   },
   "peerDependencies": {

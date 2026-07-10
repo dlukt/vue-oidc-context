@@ -29,6 +29,8 @@ jobs:
       - run: pnpm build
       - name: Core dist types compile without vue-router (M4 fixture)
         run: pnpm typecheck:fixtures
+      - name: Playground builds against the packaged entries (M5)
+        run: pnpm --filter playground build
       - run: pnpm pack
       - name: Guard suite against vue-router 4 (oldest supported peer major)
         run: |
