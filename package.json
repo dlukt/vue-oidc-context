@@ -1,6 +1,6 @@
 {
   "name": "@dlukt/vue-oidc-context",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "OpenID Connect (OIDC) & OAuth 2.0 authentication for Vue 3 — a lightweight, fully typed wrapper around oidc-client-ts, ported from react-oidc-context",
   "type": "module",
   "license": "MIT",
