@@ -3,7 +3,7 @@
 |               |                                                                                                                                      |
 | ------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
 | **Package**   | `@dlukt/vue-oidc-context`                                                                                                            |
-| **Status**    | Draft (pre-implementation)                                                                                                           |
+| **Status**    | Draft (implementation in progress — M2 of [PLAN.md](./PLAN.md) done)                                                                 |
 | **Target**    | v0.1.0                                                                                                                               |
 | **License**   | MIT                                                                                                                                  |
 | **Reference** | [react-oidc-context](https://github.com/authts/react-oidc-context) v3, [oidc-client-ts](https://github.com/authts/oidc-client-ts) v3 |
@@ -268,16 +268,26 @@ export interface AuthProviderProps extends AuthCallbacks {
   /** Bring-your-own UserManager. Exactly one of settings/userManager must be set. */
   userManager?: UserManager;
 }
+
+/** Slot props: the AuthContext with its refs unwrapped to plain values. */
+export type AuthProviderSlotProps = Omit<AuthContext, keyof AuthState> & {
+  user: User | null | undefined;
+  isLoading: boolean;
+  isAuthenticated: boolean;
+  activeNavigator: NavigatorKey | undefined;
+  error: ErrorContext | undefined;
+};
 ```
 
-- **Default slot** receives the `AuthContext` as slot props: `<AuthProvider v-slot="{ isAuthenticated }">…`.
-- Initialization (§5.1) starts on mount; event subscriptions are disposed on unmount via the component scope.
+- **Default slot** receives the context as slot props with the refs unwrapped to plain values (`AuthProviderSlotProps`): `<AuthProvider v-slot="{ isAuthenticated }">…`. Slot props are not top-level template bindings, so Vue would not auto-unwrap refs there; the component unwraps them per render instead. Inside the subtree, `useAuth()` returns the usual ref-based `AuthContext`.
+- Exactly one of `settings`/`userManager` must be set; setup throws otherwise. Props are read once when the provider is created — changing them later has no effect (parity: react-oidc-context fixes its UserManager on first render).
+- Initialization (§5.1) starts during component setup (in the browser); event subscriptions are disposed with the component's effect scope on unmount.
 - Nesting is supported; `useAuth()` resolves the nearest provider. Two providers pointing at the same `authority` + `client_id` share oidc-client-ts storage keys — that is oidc-client-ts behavior, not something this library changes.
 - The plugin and the component produce the same `AuthContext` shape from the same core; the only difference is scope and lifetime.
 
 ### 4.4 `useAutoSignin(options?)`
 
-Automatically attempts sign-in **once per app instance**, matching react-oidc-context's `useAutoSignin`.
+Automatically attempts sign-in **once per context** (plugin instance or enclosing `<AuthProvider>`), matching react-oidc-context's `useAutoSignin`. Several components may call the composable; only one attempt is made through a given context.
 
 ```ts
 export interface UseAutoSigninOptions {
@@ -293,7 +303,7 @@ export function useAutoSignin(options?: UseAutoSigninOptions): {
 };
 ```
 
-The attempt fires only when **all** hold: no auth params in the URL, `!isAuthenticated`, no `activeNavigator`, `!isLoading`, and no previous attempt was made through this context. Implemented with a watcher so it also fires if the conditions become true after initialization settles.
+The attempt fires only when **all** hold: no auth params in the URL, `!isAuthenticated`, no `activeNavigator`, `!isLoading`, and no previous attempt was made through this context. Implemented with a watcher so it also fires if the conditions become true after initialization settles. A failed attempt is not retried; the failure surfaces on `error` per §5.4 (the composable swallows the rejection, so no unhandled-rejection noise).
 
 ### 4.5 `createAuthGuard(auth, options?)` — `@dlukt/vue-oidc-context/router`
 
@@ -408,15 +418,15 @@ export const AUTH_CONTEXT_KEY: InjectionKey<AuthContext>;
 
 From `@dlukt/vue-oidc-context`:
 
-| Export                                                                                                                                                                                 | Kind                                         |
-| -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------- |
-| `createOidcAuth`                                                                                                                                                                       | function                                     |
-| `useAuth`, `useAutoSignin`                                                                                                                                                             | composables                                  |
-| `AuthProvider`, `AuthenticationRequired`                                                                                                                                               | components                                   |
-| `hasAuthParams`                                                                                                                                                                        | util                                         |
-| `AUTH_CONTEXT_KEY`                                                                                                                                                                     | injection key                                |
-| `AuthState`, `AuthContext`, `AuthCallbacks`, `OidcAuthOptions`, `OidcAuth`, `AuthProviderProps`, `AuthenticationRequiredProps`, `UseAutoSigninOptions`, `NavigatorKey`, `ErrorContext` | types                                        |
-| `User`, `UserManager`, `WebStorageStateStore`, `InMemoryWebStorage`, `Log` and the settings/args types used above                                                                      | re-exports from oidc-client-ts (convenience) |
+| Export                                                                                                                                                                                                          | Kind                                         |
+| --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------- |
+| `createOidcAuth`                                                                                                                                                                                                | function                                     |
+| `useAuth`, `useAutoSignin`                                                                                                                                                                                      | composables                                  |
+| `AuthProvider`, `AuthenticationRequired`                                                                                                                                                                        | components                                   |
+| `hasAuthParams`                                                                                                                                                                                                 | util                                         |
+| `AUTH_CONTEXT_KEY`                                                                                                                                                                                              | injection key                                |
+| `AuthState`, `AuthContext`, `AuthCallbacks`, `OidcAuthOptions`, `OidcAuth`, `AuthProviderProps`, `AuthProviderSlotProps`, `AuthenticationRequiredProps`, `UseAutoSigninOptions`, `NavigatorKey`, `ErrorContext` | types                                        |
+| `User`, `UserManager`, `WebStorageStateStore`, `InMemoryWebStorage`, `Log` and the settings/args types used above                                                                                               | re-exports from oidc-client-ts (convenience) |
 
 From `@dlukt/vue-oidc-context/router`: `createAuthGuard`, `AuthGuardOptions`.
 

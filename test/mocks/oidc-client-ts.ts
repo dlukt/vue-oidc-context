@@ -109,23 +109,60 @@ export function makeUser(
   } as unknown as OidcUser;
 }
 
+/** Handlers register both in the module-level sets (so the fire* helpers above
+ *  reach every instance) and per instance, so multi-provider tests can target
+ *  a single UserManager via `instance.events.fire*(...)`. */
 class MockUserManagerEvents {
+  private readonly userLoaded = new Set<UserLoadedHandler>();
+  private readonly userUnloaded = new Set<VoidHandler>();
+  private readonly userSignedOut = new Set<VoidHandler>();
+  private readonly silentRenewError = new Set<ErrorHandler>();
+
   addUserLoaded = (cb: UserLoadedHandler): (() => void) => {
     userLoadedHandlers.add(cb);
-    return () => userLoadedHandlers.delete(cb);
+    this.userLoaded.add(cb);
+    return () => {
+      userLoadedHandlers.delete(cb);
+      this.userLoaded.delete(cb);
+    };
   };
   addUserUnloaded = (cb: VoidHandler): (() => void) => {
     userUnloadedHandlers.add(cb);
-    return () => userUnloadedHandlers.delete(cb);
+    this.userUnloaded.add(cb);
+    return () => {
+      userUnloadedHandlers.delete(cb);
+      this.userUnloaded.delete(cb);
+    };
   };
   addUserSignedOut = (cb: VoidHandler): (() => void) => {
     userSignedOutHandlers.add(cb);
-    return () => userSignedOutHandlers.delete(cb);
+    this.userSignedOut.add(cb);
+    return () => {
+      userSignedOutHandlers.delete(cb);
+      this.userSignedOut.delete(cb);
+    };
   };
   addSilentRenewError = (cb: ErrorHandler): (() => void) => {
     silentRenewErrorHandlers.add(cb);
-    return () => silentRenewErrorHandlers.delete(cb);
+    this.silentRenewError.add(cb);
+    return () => {
+      silentRenewErrorHandlers.delete(cb);
+      this.silentRenewError.delete(cb);
+    };
   };
+
+  fireUserLoaded(user: OidcUser): void {
+    for (const handler of this.userLoaded) handler(user);
+  }
+  fireUserUnloaded(): void {
+    for (const handler of this.userUnloaded) handler();
+  }
+  fireUserSignedOut(): void {
+    for (const handler of this.userSignedOut) handler();
+  }
+  fireSilentRenewError(error: Error): void {
+    for (const handler of this.silentRenewError) handler(error);
+  }
 }
 
 export class UserManager {

@@ -3,8 +3,12 @@
  * A lightweight, fully typed wrapper around oidc-client-ts, ported from
  * react-oidc-context. API contract: docs/SPEC.md.
  */
+export { AuthProvider } from "./AuthProvider";
+export type { AuthProviderProps, AuthProviderSlotProps } from "./AuthProvider";
 export { AUTH_CONTEXT_KEY, useAuth } from "./injection";
 export { createOidcAuth } from "./plugin";
+export { useAutoSignin } from "./useAutoSignin";
+export type { UseAutoSigninOptions } from "./useAutoSignin";
 export { hasAuthParams } from "./utils";
 export type {
   AuthCallbacks,
