@@ -23,8 +23,11 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       # npm >= 11.5.1 is required for OIDC trusted publishing; older bundled
-      # versions fail with a misleading E404 on scoped packages.
-      - run: npm install -g npm@latest
+      # versions fail with a misleading E404 on scoped packages. Pinned to the
+      # 11.x line: npm 12 array-wraps `npm info --json` and reshapes error
+      # JSON, which @changesets/cli <= 2.31.0 misparses — it then attempts a
+      # duplicate publish and crashes in isAlreadyPublishedError.
+      - run: npm install -g npm@11
       - name: Create version PR or publish to npm
         uses: changesets/action@v1
         with:
