@@ -28,9 +28,14 @@ jobs:
       # JSON, which @changesets/cli <= 2.31.0 misparses — it then attempts a
       # duplicate publish and crashes in isAlreadyPublishedError.
       - run: npm install -g npm@11
+      # v2 is required by @changesets/cli 3: v1 discovered published packages by
+      # scraping "New tag:" lines out of `changeset publish` stdout, which 3.x no
+      # longer prints. v1 therefore found nothing to release and silently skipped
+      # pushing git tags and creating GitHub releases while still exiting 0.
+      # v2 reads the structured output file the CLI writes to $CHANGESETS_OUTPUT.
       - name: Create version PR or publish to npm
-        uses: changesets/action@v1
+        uses: changesets/action@v2
         with:
-          publish: pnpm release
+          publish-script: pnpm release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
