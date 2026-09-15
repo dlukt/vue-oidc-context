@@ -51,23 +51,23 @@ vue-oidc-context/
 ├── .changeset/
 ├── package.json                  # the library (workspace root is the publishable package)
 ├── pnpm-workspace.yaml           # members: ["playground"]
-├── tsconfig.json  tsdown.config.ts  vitest.config.ts  eslint.config.js
+├── tsconfig.json  tsdown.config.ts  vitest.config.ts  .oxlintrc.json
 ├── LICENSE                       # MIT
 └── README.md
 ```
 
 ## 3. Toolchain
 
-| Concern         | Choice                                            | Notes                                                                                             |
-| --------------- | ------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
-| Package manager | pnpm (workspace)                                  | root = publishable lib, `playground/` private member                                              |
-| Language        | TypeScript, `strict: true`                        | target ES2022, `moduleResolution: bundler`, `isolatedDeclarations` if practical                   |
-| Build           | **tsdown**                                        | two entries (`src/index.ts`, `src/router.ts`), ESM + CJS + `.d.ts`/`.d.cts`, treeshake, no minify |
-| Tests           | Vitest + happy-dom + @vue/test-utils              | plus `expectTypeOf` type tests                                                                    |
-| Lint/format     | ESLint flat config (typescript-eslint) + Prettier | no eslint-plugin-vue needed (no SFCs in `src/`)                                                   |
-| Docs            | VitePress                                         | deployed to GitHub Pages                                                                          |
-| Releases        | Changesets                                        | manual `changeset` per PR, bot-driven version PRs                                                 |
-| Node (dev/CI)   | ≥ 22.13 (pnpm 11 floor)                           | library itself is browser-targeted; published `engines` floor stays `>=20`                        |
+| Concern         | Choice                                       | Notes                                                                                             |
+| --------------- | -------------------------------------------- | ------------------------------------------------------------------------------------------------- |
+| Package manager | pnpm (workspace)                             | root = publishable lib, `playground/` private member                                              |
+| Language        | TypeScript, `strict: true`                   | target ES2022, `moduleResolution: bundler`, `isolatedDeclarations` if practical                   |
+| Build           | **tsdown**                                   | two entries (`src/index.ts`, `src/router.ts`), ESM + CJS + `.d.ts`/`.d.cts`, treeshake, no minify |
+| Tests           | Vitest + happy-dom + @vue/test-utils         | plus `expectTypeOf` type tests                                                                    |
+| Lint/format     | oxlint (type-aware, via tsgolint) + Prettier | `.oxlintrc.json` mirrors the old `recommendedTypeChecked` rule set; no SFCs in `src/`             |
+| Docs            | VitePress                                    | deployed to GitHub Pages                                                                          |
+| Releases        | Changesets                                   | manual `changeset` per PR, bot-driven version PRs                                                 |
+| Node (dev/CI)   | ≥ 22.13 (pnpm 11 floor)                      | library itself is browser-targeted; published `engines` floor stays `>=20`                        |
 
 Exact dependency versions are resolved at scaffold time (latest stable); the ranges that matter contractually are the peer ranges in SPEC §3.
 
@@ -202,4 +202,4 @@ Manual E2E checklist (run before each release, documented in `playground/README.
 | Duende demo IdP availability/config drift                        | Keycloak docker-compose fallback in the playground                                                                                                          |
 | Upstream react-oidc-context behavior changes (we claim parity)   | Migration table + parity notes reference upstream v3; re-verify against upstream before `v1.0.0`                                                            |
 | Name confusion with the unrelated npm `vue-oidc-context` package | README states the scoped name prominently; npm description differentiates                                                                                   |
-| TypeScript pinned to 6.0.x although 7 (native, faster) is out    | tsdown (`^5 \|\| ^6`) and typescript-eslint (`<6.1`) don't accept TS 7 yet; bump the pin as soon as both widen their peer ranges                            |
+| TypeScript 7 (native) support                                    | Resolved 2026-09-15: typescript-eslint blocked TS 7, so linting moved to oxlint + tsgolint (itself typescript-go based) and the pin moved to `^7.0.2`       |

@@ -45,7 +45,7 @@ function protectedRoute(fullPath = "/admin"): RouteLocationNormalizedLoaded {
   return route({ fullPath, path: fullPath, meta: { requiresAuth: true } });
 }
 
-const next = (() => {}) as NavigationGuardNext;
+const next: NavigationGuardNext = () => {};
 
 /** Calls the guard the way vue-router would; normalized to a promise. */
 function run(

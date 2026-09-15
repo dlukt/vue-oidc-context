@@ -1,5 +1,15 @@
 # @dlukt/vue-oidc-context
 
+## 0.1.2
+
+### Patch Changes
+
+- Move linting from ESLint to oxlint and upgrade to TypeScript 7.
+  
+  `typescript-eslint` hard-errors on TS 7, which blocked the compiler upgrade. oxlint gets its type information from `tsgolint`, which is built on typescript-go, so the type-aware rule set survives the move: `.oxlintrc.json` mirrors the rules the old `recommendedTypeChecked` config enabled.
+  
+  No runtime or source change — `src/` is untouched. The published declarations are semantically identical; TS 7 only orders union members and interface properties differently.
+
 ## 0.1.1
 
 ### Patch Changes

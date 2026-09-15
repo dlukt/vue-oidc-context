@@ -196,4 +196,9 @@ export class UserManager {
 export class User {}
 export class WebStorageStateStore {}
 export class InMemoryWebStorage {}
-export const Log = { setLogger: vi.fn(), setLevel: vi.fn() };
+// Annotated explicitly: TS 7's declaration emit cannot name the inferred
+// `Mock<...>` type without reaching into vitest's internals (TS2883).
+export const Log: {
+  setLogger: (...args: unknown[]) => void;
+  setLevel: (...args: unknown[]) => void;
+} = { setLogger: vi.fn(), setLevel: vi.fn() };
