@@ -13,8 +13,13 @@ jobs:
   ci:
     runs-on: ubuntu-latest
     strategy:
+      # Without this, a failure on the not-yet-LTS 26 cancels the 22 and 24 jobs,
+      # which hides whether a break is Node-26-specific or general.
+      fail-fast: false
       matrix:
-        node-version: [22, 24]
+        # 22 and 24 are the active LTS lines; 26 is Current and becomes LTS in
+        # October 2026 — here early so regressions surface before the promotion.
+        node-version: [22, 24, 26]
     steps:
       - uses: actions/checkout@v7
       - uses: pnpm/action-setup@v6
