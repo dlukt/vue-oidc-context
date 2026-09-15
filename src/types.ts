@@ -62,25 +62,28 @@ export interface AuthContext extends AuthState {
   /** Raw oidc-client-ts event bus (addAccessTokenExpiring, addUserLoaded, …). */
   readonly events: UserManagerEvents;
 
-  signinRedirect(args?: SigninRedirectArgs): Promise<void>;
-  signinPopup(args?: SigninPopupArgs): Promise<User>;
-  signinSilent(args?: SigninSilentArgs): Promise<User | null>;
-  signinResourceOwnerCredentials(
+  // Declared as properties, not methods: every one is a bound closure that
+  // never reads `this`, so destructuring (`const { signinRedirect } = useAuth()`)
+  // is safe and keeps parameters checked contravariantly.
+  signinRedirect: (args?: SigninRedirectArgs) => Promise<void>;
+  signinPopup: (args?: SigninPopupArgs) => Promise<User>;
+  signinSilent: (args?: SigninSilentArgs) => Promise<User | null>;
+  signinResourceOwnerCredentials: (
     args: SigninResourceOwnerCredentialsArgs,
-  ): Promise<User>;
-  signoutRedirect(args?: SignoutRedirectArgs): Promise<void>;
-  signoutPopup(args?: SignoutPopupArgs): Promise<void>;
-  signoutSilent(args?: SignoutSilentArgs): Promise<void>;
+  ) => Promise<User>;
+  signoutRedirect: (args?: SignoutRedirectArgs) => Promise<void>;
+  signoutPopup: (args?: SignoutPopupArgs) => Promise<void>;
+  signoutSilent: (args?: SignoutSilentArgs) => Promise<void>;
 
   /** Removes the stored user, then invokes onRemoveUser. */
-  removeUser(): Promise<void>;
-  clearStaleState(): Promise<void>;
-  querySessionStatus(
+  removeUser: () => Promise<void>;
+  clearStaleState: () => Promise<void>;
+  querySessionStatus: (
     args?: QuerySessionStatusArgs,
-  ): Promise<SessionStatus | null>;
-  revokeTokens(types?: RevokeTokensTypes): Promise<void>;
-  startSilentRenew(): void;
-  stopSilentRenew(): void;
+  ) => Promise<SessionStatus | null>;
+  revokeTokens: (types?: RevokeTokensTypes) => Promise<void>;
+  startSilentRenew: () => void;
+  stopSilentRenew: () => void;
 }
 
 /** Lifecycle hooks shared by the plugin and the <AuthProvider> component.

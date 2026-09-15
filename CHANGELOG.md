@@ -1,5 +1,13 @@
 # @dlukt/vue-oidc-context
 
+## 0.1.1
+
+### Patch Changes
+
+- Declare the `AuthContext` method surface as function-typed properties instead of method signatures.
+  
+  Every entry (`signinRedirect`, `signoutPopup`, `removeUser`, …) is implemented as a bound closure that never reads `this`, so destructuring — `const { signinRedirect } = useAuth()` — was always safe at runtime. Declaring them as properties makes that explicit in the types, stops `@typescript-eslint/unbound-method` from flagging consumer code that pulls a method off the context, and checks the arguments contravariantly.
+
 ## 0.1.0
 
 ### Minor Changes
