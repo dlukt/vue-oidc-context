@@ -5,6 +5,12 @@ packages:
 allowBuilds:
   # esbuild's postinstall places its platform binary (needed by VitePress's vite).
   esbuild: true
+overrides:
+  # Remove when js-beautify and editorconfig accept the patched major versions.
+  # https://github.com/advisories/GHSA-3g3m-2fjr-6pw4
+  "js-beautify>glob": "^14.0.2"
+  # https://github.com/advisories/GHSA-g3hv-75wg-m249
+  "editorconfig>minimatch": "^11.0.1"
 # oxlint 1.83.0 was published 2026-09-14T12:11Z, inside pnpm's 24h minimumReleaseAge
 # soak, so these exact versions are excluded deliberately rather than by relaxing the
 # policy. Safe to delete once the pin moves to a release older than the soak window.

@@ -1,5 +1,11 @@
 # @dlukt/vue-oidc-context
 
+## 0.1.3
+
+### Patch Changes
+
+- Update development and playground dependencies to resolve security advisories. Add scoped overrides for glob and minimatch until upstream dependencies accept the patched major versions.
+
 ## 0.1.2
 
 ### Patch Changes
